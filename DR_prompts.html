@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Relay</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light gray-blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff; /* White card background */
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* Increased padding */
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between elements */
+        }
+        .prompt-display {
+            min-height: 100px; /* Ensure space for longer prompts */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem; /* Larger font size for prompt */
+            font-weight: 600;
+            color: #2d3748; /* Darker text for readability */
+            background-color: #f7fafc; /* Very light background for prompt box */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem; /* Space between buttons */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+        .nav-button {
+            padding: 0.75rem 1.75rem; /* Increased button padding */
+            border-radius: 0.75rem; /* Rounded button corners */
+            font-size: 1.1rem; /* Larger button text */
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px; /* Ensure consistent button width */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Soft shadow for buttons */
+            background-color: #4299e1; /* Blue for the main button */
+            color: #ffffff;
+        }
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background-color: #3182ce;
+        }
+        .nav-button:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .counter {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+            .prompt-display {
+                font-size: 1.2rem;
+                padding: 1rem;
+                min-height: 80px;
+            }
+            .nav-button {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+                min-width: 100px;
+            }
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-2xl font-bold text-gray-700 mb-2">Monash student communities</h2>
+        <h2 class="text-2xl font-bold text-gray-700 mb-4">Clash of the Constellations</h2>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-4 rounded-lg p-2">Drawing Relay</h1>
+        <div id="promptDisplay" class="prompt-display">
+            Click 'Get Random Prompt' to start!
+        </div>
+        <div class="navigation-buttons">
+            <button id="getRandomPromptButton" class="nav-button">Get Random Prompt</button>
+        </div>
+        <div id="promptCounter" class="counter"></div>
+    </div>
+
+    <script>
+        // Array of drawing prompts
+        const prompts = [
+            "A cat playing the piano",
+            "A dog riding a skateboard",
+            "A monkey wearing sunglasses",
+            "A penguin juggling fish",
+            "A lion brushing its mane",
+            "A turtle with a jetpack",
+            "A bird painting a picture",
+            "A frog wearing a crown",
+            "A bear eating pancakes",
+            "A rabbit riding a bicycle",
+            "A snake playing basketball",
+            "A giraffe with a scarf",
+            "A hippo dancing ballet",
+            "A crocodile with a toothbrush",
+            "A zebra playing chess",
+            "A whale jumping rope",
+            "A panda eating pizza",
+            "A koala holding an umbrella",
+            "An octopus playing drums",
+            "A dinosaur riding a unicycle",
+            "A shark with a party hat",
+            "A camel drinking soda",
+            "An elephant painting nails",
+            "A fox with a backpack",
+            "A squirrel flying a kite",
+            "A deer eating ice cream",
+            "A wolf wearing boots",
+            "A raccoon with a flashlight",
+            "A hedgehog baking cookies",
+            "A duck swimming in soup",
+            "A parrot with a cellphone",
+            "A kangaroo with a yo-yo",
+            "A tiger juggling balls",
+            "A monkey with a telescope",
+            "A penguin with a guitar",
+            "A bear riding a rocket",
+            "A frog with sunglasses",
+            "A lion eating popcorn",
+            "A turtle with a hat",
+            "A zebra with a cane",
+            "A hippo with a balloon",
+            "A crocodile playing cards",
+            "A giraffe drinking tea",
+            "A panda with a fan",
+            "An octopus with a book",
+            "A dinosaur eating cake",
+            "A shark with a bowtie",
+            "A camel with a camera",
+            "An elephant with a trumpet",
+            "A fox riding a scooter",
+            "A car dancing with a broom",
+            "A spaceship wearing sunglasses",
+            "A chef riding a rocket",
+            "A clock juggling balls",
+            "A castle with a jetpack",
+            "A book swimming in soup",
+            "A robot painting a picture",
+            "A tree holding an umbrella",
+            "A shoe playing the piano",
+            "A cloud eating ice cream",
+            "A chandelier with a backpack",
+            "A telephone riding a bicycle",
+            "A lamp with a party hat",
+            "A chair jumping rope",
+            "A television wearing boots",
+            "A door with a telescope",
+            "A window baking cookies",
+            "A mirror with a scarf",
+            "A table flying a kite",
+            "A sofa drinking soda",
+            "A cup with a bowtie",
+            "A plate riding a scooter",
+            "A spoon playing video games",
+            "A fork with a magic wand",
+            "A knife eating popcorn",
+            "A bowl with a guitar",
+            "A pot jumping on a trampoline",
+            "A pan with a cellphone",
+            "A fridge painting nails",
+            "A toaster with a yo-yo",
+            "A microwave juggling apples",
+            "A blender wearing a crown",
+            "A oven riding a unicycle",
+            "A sink with a balloon",
+            "A bathtub playing chess",
+            "A shower with a flashlight",
+            "A toilet holding a book",
+            "A fan with a camera",
+            "A rug dancing ballet",
+            "A pillow eating pancakes",
+            "A curtain with a telescope",
+            "A clock tower riding a skateboard",
+            "A lighthouse with a party hat",
+            "A bridge jumping rope",
+            "A statue drinking tea",
+            "A fountain with sunglasses",
+            "A bench playing drums",
+            "A mailbox with a backpack",
+            "A streetlight eating cake",
+            "A traffic light with a scarf",
+            "A cow playing a trumpet",
+            "A car with wings flying",
+            "A chef juggling knives",
+            "A unicorn eating spaghetti",
+            "A robot brushing its teeth",
+            "A tree wearing sneakers",
+            "A mermaid riding a skateboard",
+            "A ghost holding a flashlight",
+            "A pirate with a parrot on a unicycle",
+            "A spaceship baking cookies",
+            "A dragon painting a portrait",
+            "A clock with legs running",
+            "An astronaut eating ice cream",
+            "A castle jumping rope",
+            "A wizard with a backpack",
+            "A fish wearing a crown",
+            "A superhero riding a rocket",
+            "A book with a mustache",
+            "A cat dancing with a broom",
+            "A dog surfing on a pizza",
+            "An elephant playing video games",
+            "A shoe with a jetpack",
+            "A teacher riding a bicycle",
+            "A cloud with sunglasses",
+            "A monkey swinging on a chandelier",
+            "A penguin holding an umbrella",
+            "A lion with a cellphone",
+            "A snake wearing a party hat",
+            "A giraffe painting the sky",
+            "A hippo with a guitar",
+            "A crocodile eating popcorn",
+            "A zebra with a scarf",
+            "A turtle flying a kite",
+            "A panda juggling apples",
+            "An octopus with a camera",
+            "A dinosaur drinking soda",
+            "A shark playing chess",
+            "A camel with a bowtie",
+            "An elephant riding a scooter",
+            "A fox with a magic wand",
+            "A rabbit baking a cake",
+            "A wolf swimming in juice",
+            "A raccoon with a telescope",
+            "A hedgehog wearing boots",
+            "A duck with a book",
+            "A parrot jumping rope",
+            "A tiger with a balloon",
+            "A koala eating pancakes",
+            "A bear with a yo-yo",
+            "A squirrel riding a unicycle",
+            "A doctor riding a unicycle",
+            "A teacher juggling apples",
+            "A firefighter with a jetpack",
+            "A chef painting a picture",
+            "A pilot eating ice cream",
+            "A scientist wearing sunglasses",
+            "A nurse jumping rope",
+            "A carpenter with a backpack",
+            "A musician playing a broom",
+            "An astronaut drinking soda",
+            "A baker riding a scooter",
+            "A dentist with a party hat",
+            "A writer holding an umbrella",
+            "An engineer juggling balls",
+            "A farmer with a telescope",
+            "An artist eating popcorn",
+            "A lawyer riding a bicycle",
+            "An actor with a magic wand",
+            "A photographer wearing boots",
+            "A chef cooking on a chandelier",
+            "A doctor with a guitar",
+            "A teacher flying a kite",
+            "A firefighter painting nails",
+            "A pilot with a bowtie",
+            "A scientist jumping on a trampoline",
+            "A nurse with a cellphone",
+            "A carpenter eating pancakes",
+            "A musician with a yo-yo",
+            "An astronaut riding a rocket",
+            "A baker with a scarf",
+            "A dentist playing chess",
+            "A writer with a balloon",
+            "An engineer wearing a crown",
+            "A farmer drinking tea",
+            "An artist with a flashlight",
+            "A lawyer juggling books",
+            "An actor swimming in soup",
+            "A photographer with a camera",
+            "A chef dancing ballet",
+            "A doctor playing video games",
+            "A teacher with a book",
+            "A firefighter riding a skateboard",
+            "A pilot with a party hat",
+            "A scientist eating cake",
+            "A nurse with a telescope",
+            "A carpenter building a cloud",
+            "A musician with a microphone",
+            "An astronaut with a spaceship",
+            "A baker wearing sunglasses",
+            "A dentist brushing a chair"
+        ];
+
+        let lastPromptIndex = -1; // Keep track of the last prompt shown
+        const promptDisplay = document.getElementById('promptDisplay');
+        const getRandomPromptButton = document.getElementById('getRandomPromptButton');
+        const promptCounter = document.getElementById('promptCounter');
+        let promptHistory = []; // To keep track of shown prompts if needed, not strictly for repeat logic
+
+        // Function to get a random prompt
+        function getRandomPrompt() {
+            let randomIndex;
+            // Ensure a different prompt is picked if possible, though not strictly required by "repeat after everything is finished"
+            // If the list is very small, it might pick the same one consecutively.
+            if (prompts.length > 1) {
+                do {
+                    randomIndex = Math.floor(Math.random() * prompts.length);
+                } while (randomIndex === lastPromptIndex);
+            } else {
+                randomIndex = 0; // Only one prompt, just pick that one
+            }
+
+            lastPromptIndex = randomIndex;
+            promptDisplay.textContent = prompts[randomIndex];
+            promptCounter.textContent = `Prompt (Original Index ${randomIndex + 1}) of ${prompts.length}`;
+        }
+
+        // Event listener for the "Get Random Prompt" button
+        getRandomPromptButton.addEventListener('click', getRandomPrompt);
+
+        // Initialize with a random prompt on load, or show initial message
+        promptDisplay.textContent = "Click 'Get Random Prompt' to start!";
+        promptCounter.textContent = `Total Prompts: ${prompts.length}`;
+    </script>
+</body>
+</html>
